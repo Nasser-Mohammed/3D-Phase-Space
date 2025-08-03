@@ -31,6 +31,8 @@ const palettes = {
 
 let initColors = palettes.r;
 
+let allGridsVisible = true;
+
 
 const trailGeometry1 = new THREE.BufferGeometry();
 const trailMaterial1 = new THREE.LineBasicMaterial({ color: initColors[0]});
@@ -60,20 +62,38 @@ nameMap.set("lorenz", "Lorenz System");
 nameMap.set("rossler", "Rössler System");
 nameMap.set("fitzhughNagumo", "FitzHugh-Nagumo Model");
 nameMap.set("chua", "Chua's Circuit");
-nameMap.set("aizawa", "Aizawa System");
+nameMap.set("aizawa", "Aizawa Attractor");
 nameMap.set("halvorsen", "Halvorsen System");
 nameMap.set("chen", "Chen System");
 nameMap.set("thomas", "Thomas System");
 nameMap.set("sprout", "Sprout System");
+nameMap.set("dadras", "Dadras System");
+nameMap.set("lu", "Lü Attractor");
+nameMap.set("chen", "Chen Attractor");
+
 
 const equationMap = new Map();
 equationMap.set("lorenz", "\\[\\begin{align*} \\frac{dx}{dt} &= \\sigma(y - x) \\\\ \\\\ \\frac{dy}{dt} &= x(\\rho - z) - y \\\\ \\\\ \\frac{dz}{dt} &= xy - \\beta z \\end{align*}\\]");
 equationMap.set("rossler", "\\[\\begin{align*} \\frac{dx}{dt} &= -y - z \\\\ \\\\ \\frac{dy}{dt} &= x + ay \\\\ \\\\ \\frac{dz}{dt} &= b + z(x - c) \\end{align*}\\]");
+equationMap.set("halvorsen", "\\[\\begin{align*} \\frac{dx}{dt} &=  -ax - 4y -4z - y^2 \\\\ \\\\ \\frac{dy}{dt} &= -ay -4z-4x-z^2 \\\\ \\\\ \\frac{dz}{dt} &= -az-4x-4y-x^2 \\end{align*}\\]");
+equationMap.set("thomas", "\\[\\begin{align*} \\frac{dx}{dt} &= \\sin(y) - bx \\\\ \\\\ \\frac{dy}{dt} &= \\sin(z) - by  \\\\ \\\\ \\frac{dz}{dt} &= \\sin(x) - bz \\end{align*}\\]");
+equationMap.set("fitzhughNagumo", "\\[\\begin{align*} \\frac{dv}{dt} &= v - \\frac{v^3}{3} - w + z + I \\\\ \\\\ \\frac{dw}{dt} &= \\mu_1(v+a-bw) \\\\ \\\\ \\frac{dz}{dt} &= \\mu_2(c-v) \\end{align*}\\]");
+equationMap.set("dadras", "\\[\\begin{align*} \\frac{dx}{dt} &= y-ax\\\\ \\\\ \\frac{dy}{dt} &= cx - xz + y\\\\ \\\\ \\frac{dz}{dt} &= xy - bz \\end{align*}\\]");
+equationMap.set("lu", "\\[\\begin{align*} \\frac{dx}{dt} &= a(y-z)\\\\ \\\\ \\frac{dy}{dt} &= -xz + cy\\\\ \\\\ \\frac{dz}{dt} &= xy - bz \\end{align*}\\]");
+equationMap.set("aizawa", "\\[\\begin{align*} \\frac{dx}{dt} &= (z-b)x- yd\\\\ \\\\ \\frac{dy}{dt} &= -xd + (z-b)y\\\\ \\\\ \\frac{dz}{dt} &= c+ax-\\frac{z^3}{3} - (x^2+y^2)(1+ez)+fzx^3 \\end{align*}\\]");
+equationMap.set("chen", "\\[\\begin{align*} \\frac{dx}{dt} &= a(y-x)\\\\ \\\\ \\frac{dy}{dt} &= x(c-a) -xz + cy\\\\ \\\\ \\frac{dz}{dt} &= xy -bz \\end{align*}\\]");
 
 
 const equationParamMap = new Map();
 equationParamMap.set("lorenz", ["\\sigma", "\\rho", "\\beta"]);
 equationParamMap.set("rossler", ["a", "b", "c"]);
+equationParamMap.set("halvorsen", ["a", "b", "c"]);
+equationParamMap.set("thomas", ["a", "b", "c"]);
+equationParamMap.set("fitzhughNagumo", ["a", "b", "c"]);
+equationParamMap.set("dadras", ["a", "b", "c"]);
+equationParamMap.set("lu", ["a", "b", "c"]);
+equationParamMap.set("aizawa", ["a", "b", "c"]);
+equationParamMap.set("chen", ["a", "b", "c"]);
 
  // smooth camera movement
 
@@ -90,22 +110,94 @@ class ThreeDimensionalSystems {
       ["chen", (x, y, z) => this.chen(x, y, z)],
       ["thomas", (x, y, z) => this.thomas(x, y, z)],
       ["sprout", (x, y, z) => this.sprout(x, y, z)],
+      ["dadras", (x, y, z) => this.dadras(x, y, z)],
+      ["lu", (x, y, z) => this.lu(x, y, z)],
     ]);
 
     this.initParams = new Map([
       ["lorenz", [10, 28, 8/3]],
-      ["rossler", [0.2, 0.2, 5.7]]
-    ])
+      ["rossler", [0.2, 0.2, 5.7]],
+      ["fitzhughNagumo", [0.7, 0.8, -0.5]],
+      ["chua", []],
+      ["aizawa", [0.95, 0.7, 0.6]],
+      ["halvorsen", [1.4, 0, 0]],
+      ["chen", [35, 3, 28]],
+      ["thomas", [0, 0.18, 0.5]],
+      ["sprout", []],
+      ["dadras", [2, 0.5, 3]],
+      ["lu", [36, 3, 20]]
+    ]);
 
     this.params = new Map([
       ["lorenz", [10, 28, 8/3]],
-      ["rossler", [0.2, 0.2, 5.7]]
+      ["rossler", [0.2, 0.2, 5.7]],
+      ["fitzhughNagumo", [0.7, 0.8, -0.5]],
+      ["chua", []],
+      ["aizawa", [0.95, 0.7, 0.6]],
+      ["halvorsen", [1.4, 0, 0]],
+      ["chen", [35, 3, 28]],
+      ["thomas", [0, 0.208, .5]],
+      ["sprout", []],
+      ["dadras", [2, 0.5, 3]],
+      ["lu", [36, 3, 20]]
     ]);
 
     this.paramsRange = new Map([
       ["lorenz", [[4, 25], [23, 80], [0.8, 3.9]]],
-      ["rossler", [[.1, 0.28], [.1, 1], [3, 9]]]
+      ["rossler", [[.1, 0.28], [.1, 1], [3, 9]]],
+      ["fitzhughNagumo", [[.1, 1.2], [.1, 1.2], [0.5, 2]]],
+      ["chua", []],
+      ["aizawa", [[0.8, 1.2], [0.5, 1], [0.4,0.7]]],
+      ["halvorsen", [[1.3, 3.5], [0, 0], [0, 0]]],
+      ["chen", [[32.5, 40], [2, 4], [20, 29]]],
+      ["thomas", [[0, 0], [-2, 2], [-3,5]]],
+      ["sprout", []],
+      ["dadras", [[1.7, 2.5], [0.25, 1.5], [-0.5, 5]]],
+      ["lu", [[25, 60], [0.5, 15], [13, 25]]]
     ]);
+
+    this.renderScale = new Map([
+      ["lorenz", 0.05],
+      ["rossler", 0.25],
+      ["fitzhughNagumo", 0.5],
+      ["chua", 0.01],
+      ["aizawa", 1.5],
+      ["halvorsen", 0.2],
+      ["chen", 0.05],
+      ["thomas", 1.5],
+      ["sprout", 0.01],
+      ["dadras", 0.3],
+      ["lu", 0.075]
+    ]);
+
+    this.initialConditions = new Map([
+      ["lorenz", [[1, 1, 1], [2, 3, 4], [2.5,2,3]]],
+      ["rossler", [[1, 1, 1], [2, 3, 4], [2.5, 2, 3]]],
+      ["fitzhughNagumo", [[-1, -0.5, 1], [-10, 4, 1], [5, 5, -1]]],
+      ["chua", [[0, 0, 0], [0, 0, 0], [0,0,0]]],
+      ["aizawa", [[0.5, 1.5, 0], [0.11, 0.01, 0], [0.09, -0.01, 0]]],
+      ["halvorsen", [[-0.5, 2, 1], [2, 3, 4], [2.5,2,3]]],
+      ["chen", [[0.5, 1.5, 0], [0.11, 0.01, 0], [0.09, -0.01, 0]]],
+      ["thomas", [[3, -2, 4], [2, 3, 4], [2.5,2,3]]],
+      ["sprout", [[0, 0, 0], [0, 0, 0], [0,0,0]]],
+      ["dadras", [[0.1, 0, 0], [0.2, 0, 0], [0.3, 0, 0]]],
+      ["lu", [[0.5, 1.5, 0], [0.11, 0.01, 0], [0.09, -0.01, 0]]]
+    ]);
+
+    this.numParams = new Map([
+      ["lorenz", 3],
+      ["rossler", 3],
+      ["fitzhughNagumo", 4],
+      ["chua", 4],
+      ["aizawa", 5],
+      ["halvorsen", 3],
+      ["chen", 3],
+      ["thomas", 1],
+      ["sprout", 1],
+      ["dadras", 3]
+    ]);
+
+
   }
 
 
@@ -126,15 +218,15 @@ class ThreeDimensionalSystems {
   }
 
   thomas(x, y, z) {
-    const a = 0.208186, b = 0.205, c = 5.0;
-    const dx = Math.sin(y) - b*x;
-    const dy = Math.sin(z) - b*y;
-    const dz = Math.sin(x) - b*z;
+    const [a, b, k] = this.params.get("thomas");
+    const dx = k*Math.sin(y) - b*x;
+    const dy = k*Math.sin(z) - b*y;
+    const dz = k*Math.sin(x) - b*z;
     return [dx, dy, dz];
   }
 
   sprout(x, y, z) {
-    const a = 0.2, b = 0.2, c = 5.7;
+    const [a, b, c] = this.params.get("sprout");
     const dx = y;
     const dy = z;
     const dz = -0.5*x - y - z + x**2;
@@ -142,30 +234,33 @@ class ThreeDimensionalSystems {
   }
 
   chen(x, y, z) {
-    const a = 35, b = 3, c = 28;
+    const [a,b,c] = this.params.get("chen");
     const dx = a * (y - x);
-    const dy = x * (b - z) - y;
-    const dz = x * y - c * z;
+    const dy = (c-a)*x-x*z+c*y;
+    const dz = x*y-b*z;
     return [dx, dy, dz];
   }
 
 
   halvorsen(x, y, z) {
-    const a = 0.2, b = 0.2, c = 5.7;
-    const dx = -y - z;
-    const dy = x + a * y;
-    const dz = b + z * (x - c);
+    const [a, b, c] = this.params.get("halvorsen");
+    const dx = -a*x - 4*y - 4*z - y**2;
+    const dy = -a*y -4*z - 4*x - z**2;
+    const dz = -a*z- 4*x- 4*y - x**2;
     return [dx, dy, dz];
   }
 
+  //need to handle its high num of params, we can just allow to change 3 params and keep rest constant
   aizawa(x, y, z) {
-    const a = 0.1, b = 0.1, c = 14, d = 0.1, e = 0.9, f = 0.7;
-    const dx = (z - b) * x - c * y;
-    const dy = (d + a * x) * y - e * z;
-    const dz = f + z * (x - 1);
+    const d = 3.5, e = 0.25, f = 0.1;
+    const [a, b, c] = this.params.get("aizawa");
+    const dx = (z - b) * x - d * y;
+    const dy = d*x + (z-b)*y;
+    const dz = c + a*z - (z**3)/3 - (x**2 + y**2)*(1+e*z)+f*z*x**3;
     return [dx, dy, dz];
   }
 
+  //same here
   chua(x, y, z) {
     const alpha = 15, beta = 28, m0 = -1, m1 = 1, m2 = 0.5;
     const dx = alpha * (y - x - (m1 * Math.abs(x) + m2 * Math.abs(x - m0)));
@@ -174,12 +269,32 @@ class ThreeDimensionalSystems {
     return [dx, dy, dz];
   }
 
+  //same here
   fitzhughNagumo(x, y, z) {
-    const a = 0.7, b = 0.8, c = 3, d = 0.5;
-    const dx = x - (x * x * x / 3) + y;
-    const dy = (x + a - b * y) / c;
-    const dz = d*(x-z);
+    const a = 0.7, b = 0.8, c = 10;
+    const mu = 0.08, I = 5;
+    const dx = x - ((x * x * x )/3 - y) + z + I;
+    const dy = (x + a - b * y)*mu;
+    const dz = (c-x)*(mu/10);
     return [dx, dy, dz];
+  }
+
+  dadras(x,y,z){
+    const [a, b, c] = this.params.get("dadras");
+    const dx = y -a*x;
+    const dy = c*x-x*z+y;
+    const dz = x*y -b*z;
+    return [dx, dy, dz];
+  }
+
+  lu(x,y,z){
+    const [a,b,c] = this.params.get("lu");
+    const dx = a*(y-x);
+    const dy = -x*z + c*y;
+    const dz = x*y - b*z;
+
+    return [dx, dy, dz];
+
   }
 
   eulerStep(x, y, z) {
@@ -221,9 +336,9 @@ function clearTrail(trailArray, trailGeometry) {
 
 function reset(){
   stepsPerFrame = defaultSteps;
-  x1 = 1; y1 = 1; z1 = 1;
-  x2 = 5; y2 = 3; z2 = 4;
-  x3 = 2.5, y3 = 2, z3 = 3;
+  [x1, y1, z1] = system.initialConditions.get(system.choice)[0];
+  [x2, y2, z2] = system.initialConditions.get(system.choice)[1];
+  [x3, y3, z3] = system.initialConditions.get(system.choice)[2];
 
   clearTrail(trailPositions1, trailGeometry1);
   clearTrail(trailPositions2, trailGeometry2);
@@ -249,7 +364,7 @@ function animate() {
       [x3, y3, z3] = system.eulerStep(x3, y3, z3);
 
       // Scale down for rendering
-      const scale = 0.05;
+      const scale = system.renderScale.get(system.choice);
       ball1.position.set(x1 * scale, y1 * scale, z1 * scale);
       ball2.position.set(x2 * scale, y2 * scale, z2 * scale);
       ball3.position.set(x3 * scale, y3 * scale, z3 * scale);
@@ -267,6 +382,16 @@ function animate() {
   renderer3d.render(scene3d, camera3d);
 }
 
+function toggleParams(x,y, divName){
+  if (x === y){
+    document.getElementById(divName).style.display = "none";
+  }
+  else{
+    document.getElementById(divName).style.display = "flex";
+  }
+
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const canvas3d = document.getElementById("canvas3d");
   const width = canvas3d.width = 1500;
@@ -275,6 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
   scene3d = new THREE.Scene();
   camera3d = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
   camera3d.position.z = 4;
+  camera3d.position.set(2, 1, 4);
 
   renderer3d = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true });
   renderer3d.setSize(width, height);
@@ -342,6 +468,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const paramResetBtn = document.getElementById("resetParams-btn");
 
   systemSelect.addEventListener("change", (e) => {
+    const [p1Old, p2Old, p3Old] = system.initParams.get(system.choice);
+    system.params.set(system.choice, [p1Old, p2Old, p3Old]);
     system.choice = e.target.value;
     const equationTitle = document.getElementById("equation-title");
     equationTitle.textContent = nameMap.get(system.choice);
@@ -365,13 +493,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const p1Min = minMaxArray[0][0];
     const p1Max = minMaxArray[0][1];
 
+    
+    toggleParams(p1Min, p1Max, "param1-div");
   
 
     const p2Min = minMaxArray[1][0];
     const p2Max = minMaxArray[1][1];
 
+    toggleParams(p2Min, p2Max, "param2-div");
+
     const p3Min = minMaxArray[2][0];
     const p3Max = minMaxArray[2][1];
+
+    toggleParams(p3Min, p3Max, "param3-div");
 
   
 
@@ -408,38 +542,33 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  param1Slider.addEventListener("input", (e) => {
+
+  param1Slider.addEventListener("change", (e) => {
     const val = parseFloat(e.target.value);
     let [p1, p2, p3] = system.params.get(system.choice);
     system.params.set(system.choice, [val, p2, p3]);
     param1Value.innerHTML = val;
-  });
-
-  param1Slider.addEventListener("change", (e) => {
     reset();
 
   });
 
-  param2Slider.addEventListener("input", (e) => {
+
+
+  param2Slider.addEventListener("change", (e) => {
     const val = parseFloat(e.target.value);
     let [p1, p2, p3] = system.params.get(system.choice);
     system.params.set(system.choice, [p1, val, p3]);
     param2Value.innerHTML = val;
-  });
-
-  param2Slider.addEventListener("change", (e) => {
-  reset();
+    reset();
 
   });
 
-  param3Slider.addEventListener("input", (e) => {
+
+  param3Slider.addEventListener("change", (e) => {
     const val = parseFloat(e.target.value);
     let [p1, p2, p3] = system.params.get(system.choice);
     system.params.set(system.choice, [p1, p2, val]);
     param3Value.innerHTML = val;
-  });
-
-  param3Slider.addEventListener("change", (e) => {
     reset();
 
   });
@@ -472,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnXZ = document.getElementById("toggle-grid-btn1");
     const btnYZ = document.getElementById("toggle-grid-btn2");
     const btnXY = document.getElementById("toggle-grid-btn3");
-
+  
     btnXZ.addEventListener("click", () => {
       showXZ = !showXZ;
       gridXZ.visible = showXZ;
@@ -521,6 +650,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
+  [x1, y1, z1] = system.initialConditions.get(system.choice)[0];
+  [x2, y2, z2] = system.initialConditions.get(system.choice)[1];
+  [x3, y3, z3] = system.initialConditions.get(system.choice)[2];
 
   animate();
 });
