@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Phase Portrait</title>
+  <link rel="icon" type="image/png" href="images/lorenzTransp.png" sizes="48x48">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <a href="../../index.html" class="back-button">← Back</a>
+  <div class="wrapper">
+    <h1>n-Dimensional Systems of ODEs</h1>
+    <h4>Solutions approximated with Runge-Kutta method and state augmentation</h4>
+    <h2><u>n-Dimensional Systems</u></h2>
+
+    <div>
+      $$\dot{\textbf{x}} = A(t)\textbf{F}(\textbf{x})$$
+      <span>Where \(\textbf{x} \in \mathbb{R}^n\), \(A(t)\) is an \(m\)x\(n\) matrix,
+        and \(\textbf{F}: \mathbb{R}^n \to \mathbb{R}^n\)
+      </span>
+    </div>
+
+      <hr>
+
+    <label for="dimension-select">Select dimension:</label>
+    <select id="dimension-select">
+      <option value="3">3D</option>
+    </select>
+
+
+
+    <!-- 3D system selector -->
+    <div id="threeD-container">
+      <label for="system-select-3d">Select 3D system:</label>
+      <select id="system-select-3d">
+        <option value="lorenz">Lorenz</option>
+        <option value="rossler">Rössler</option>
+      </select>
+    </div>
+
+    <br>
+    <br>
+    <button id="reset-btn">Reset</button>
+    </div>
+    <div class="canvas-container">
+      <canvas id="canvas3d" width="1800" height="1050" style="position:absolute"></canvas>
+      </div>
+      <div style="height: 500px;"></div>
+
+      <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js"
+      }
+    }
+  </script>
+    <script type="module" src="main.js?v=2"></script>
+</body>
+</html>
