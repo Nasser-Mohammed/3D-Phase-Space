@@ -5,31 +5,63 @@ let renderer3d, scene3d, camera3d;
 let ball;
 let ball2;
 let ball3;
-const dt = 0.01;
+const dt = 0.001;
 let frameCount = 0;
 let simulationTime = 0;
+let stepsPerFrame = 10;
+const defaultSteps = stepsPerFrame;
 let animationId = null;
 let controls; 
-const maxTrailPoints = 10000;
+const maxTrailPoints = 5000;
 const trailPositions1 = [];
 const trailPositions2 = [];
 const numSteps = 1;
 
+let showXZ = true;
+let showXY = false;
+let showYZ = true;
+
+
 const trailGeometry = new THREE.BufferGeometry();
-const trailMaterial = new THREE.LineBasicMaterial({ color: 0xffaa33 });
+const trailMaterial = new THREE.LineBasicMaterial({ color: 0xffaa33});
 const trailLine = new THREE.Line(trailGeometry, trailMaterial);
 
 const trailGeometry2 = new THREE.BufferGeometry();
-const trailMaterial2 = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+const trailMaterial2 = new THREE.LineBasicMaterial({ color: 0xCC4429});
 const trailLine2 = new THREE.Line(trailGeometry2, trailMaterial2);
 
-const trailGeometry3 = new THREE.BufferGeometry();
-const trailMaterial3 = new THREE.LineBasicMaterial({ color: 0x0000ff }); // Blue
-const trailLine3 = new THREE.Line(trailGeometry3, trailMaterial3);
+let trailSkip = 0; //update every third point on trail
+
+// const trailGeometry3 = new THREE.BufferGeometry();
+// const trailMaterial3 = new THREE.LineBasicMaterial({ color: 0x0000ff }); // Blue
+// const trailLine3 = new THREE.Line(trailGeometry3, trailMaterial3);
 
 const trailPositions3 = [];
 
+let x1 = 1, y1 = 1, z1 = 1;  // Initial Lorenz coordinates (must be non-zero)
+let x2 = 2, y2 = 3, z2 = 4; // Initial coordinates for second ball
+let x3 = 2.5, y3 = 2, z3 = 3; // Initial coordinates for third ball
 
+
+const nameMap = new Map();
+nameMap.set("lorenz", "Lorenz System");
+nameMap.set("rossler", "Rössler System");
+nameMap.set("fitzhughNagumo", "FitzHugh-Nagumo Model");
+nameMap.set("chua", "Chua's Circuit");
+nameMap.set("aizawa", "Aizawa System");
+nameMap.set("halvorsen", "Halvorsen System");
+nameMap.set("chen", "Chen System");
+nameMap.set("thomas", "Thomas System");
+nameMap.set("sprout", "Sprout System");
+
+const equationMap = new Map();
+equationMap.set("lorenz", "\\[\\begin{align*} \\frac{dx}{dt} &= \\sigma(y - x) \\\\ \\\\ \\frac{dy}{dt} &= x(\\rho - z) - y \\\\ \\\\ \\frac{dz}{dt} &= xy - \\beta z \\end{align*}\\]");
+equationMap.set("rossler", "\\[\\begin{align*} \\frac{dx}{dt} &= -y - z \\\\ \\\\ \\frac{dy}{dt} &= x + ay \\\\ \\\\ \\frac{dz}{dt} &= b + z(x - c) \\end{align*}\\]");
+
+
+const equationParamMap = new Map();
+equationParamMap.set("lorenz", ["\\sigma", "\\rho", "\\beta"]);
+equationParamMap.set("rossler", ["a", "b", "c"]);
 
  // smooth camera movement
 
@@ -47,10 +79,26 @@ class ThreeDimensionalSystems {
       ["thomas", (x, y, z) => this.thomas(x, y, z)],
       ["sprout", (x, y, z) => this.sprout(x, y, z)],
     ]);
+
+    this.initParams = new Map([
+      ["lorenz", [10, 28, 8/3]],
+      ["rossler", [0.2, 0.2, 5.7]]
+    ])
+
+    this.params = new Map([
+      ["lorenz", [10, 28, 8/3]],
+      ["rossler", [0.2, 0.2, 5.7]]
+    ]);
+
+    this.paramsRange = new Map([
+      ["lorenz", [[4, 25], [23, 80], [0.8, 3.9]]],
+      ["rossler", [[.1, 0.28], [.1, 1], [3, 9]]]
+    ]);
   }
 
+
   lorenz(x, y, z) {
-    const sigma = 10, beta = 8 / 3, rho = 28;
+    const [sigma, rho, beta] = this.params.get("lorenz");
     const dx = sigma * (y - x);
     const dy = x * (rho - z) - y;
     const dz = x * y - beta * z;
@@ -58,7 +106,7 @@ class ThreeDimensionalSystems {
   }
 
   rossler(x, y, z){
-    const a = 0.2, b = 0.2, c = 5.7;
+    const [a, b, c] = this.params.get("rossler");
     const dx = -y - z;
     const dy = x + a * y;
     const dz = b + z * (x - c);
@@ -129,6 +177,7 @@ class ThreeDimensionalSystems {
   }
 }
 
+const system = new ThreeDimensionalSystems();
 
 function updateTrail(position, trailArray, trailGeometry) {
   trailArray.push(position.clone());
@@ -148,36 +197,54 @@ function updateTrail(position, trailArray, trailGeometry) {
   trailGeometry.attributes.position.needsUpdate = true;
 }
 
+function clearTrail(trailArray, trailGeometry) {
+  trailArray.length = 0;  // empty the array
 
-const threeD_system = new ThreeDimensionalSystems();
+  // Update geometry with empty positions
+  trailGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(0), 3));
+  trailGeometry.setDrawRange(0, 0);
+  trailGeometry.attributes.position.needsUpdate = true;
+}
 
-let x = 1, y = 1, z = 1;  // Initial Lorenz coordinates (must be non-zero)
-let x2 = 5, y2 = 3, z2 = 4; // Initial coordinates for second ball
-let x3 = 2.5, y3 = 2, z3 = 3; // Initial coordinates for third ball
+
+function reset(){
+  stepsPerFrame = defaultSteps;
+  x1 = 1; y1 = 1; z1 = 1;
+  x2 = 5; y2 = 3; z2 = 4;
+  clearTrail(trailPositions1, trailGeometry);
+  clearTrail(trailPositions2, trailGeometry2);
+  document.getElementById("simulation-speed").value = Math.floor(stepsPerFrame/2);
+  document.getElementById("simulation-speed-value").textContent = Math.floor(stepsPerFrame/2);
+
+}
+
 function animate() {
   animationId = requestAnimationFrame(animate);
   if (frameCount++ % 1 !== 0) return;
 
   simulationTime += dt;
 
-  for(let i = 0; i < numSteps; i++) {
+  for(let i = 0; i < stepsPerFrame; i++) {
 
     // Euler integration
-    [x, y, z] = threeD_system.eulerStep(x, y, z);
-    [x2, y2, z2] = threeD_system.eulerStep(x2, y2, z2);
-    [x3, y3, z3] = threeD_system.eulerStep(x3, y3, z3);
+    [x1, y1, z1] = system.eulerStep(x1, y1, z1);
+    [x2, y2, z2] = system.eulerStep(x2, y2, z2);
+    [x3, y3, z3] = system.eulerStep(x3, y3, z3);
 
 
     controls.update();
 
     // Scale down for rendering
     const scale = 0.05;
-    ball.position.set(x * scale, y * scale, z * scale);
+    ball.position.set(x1 * scale, y1 * scale, z1 * scale);
     ball2.position.set(x2 * scale, y2 * scale, z2 * scale);
-    ball3.position.set(x3 * scale, y3 * scale, z3 * scale);
-    updateTrail(ball.position, trailPositions1, trailGeometry);
-    updateTrail(ball2.position, trailPositions2, trailGeometry2);
-    updateTrail(ball3.position, trailPositions3, trailGeometry3);
+    //ball3.position.set(x3 * scale, y3 * scale, z3 * scale);
+
+    if (trailSkip++ % 4 === 0){
+      updateTrail(ball.position, trailPositions1, trailGeometry);
+      updateTrail(ball2.position, trailPositions2, trailGeometry2);
+    }
+    //updateTrail(ball3.position, trailPositions3, trailGeometry3);
 
   }
 
@@ -186,12 +253,12 @@ function animate() {
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas3d = document.getElementById("canvas3d");
-  const width = canvas3d.width = 1200;
+  const width = canvas3d.width = 1500;
   const height = canvas3d.height = 900;
 
   scene3d = new THREE.Scene();
   camera3d = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-  camera3d.position.z = 5;
+  camera3d.position.z = 4;
 
   renderer3d = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true });
   renderer3d.setSize(width, height);
@@ -202,7 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Create sphere
   const geometry = new THREE.SphereGeometry(0.05, 16, 16);
   const material = new THREE.MeshBasicMaterial({ color: 0xff5533 });
-  const material2 = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
+  const material2 = new THREE.MeshBasicMaterial({ color: 	0x003300 });
   ball = new THREE.Mesh(geometry, material);
   ball2 = new THREE.Mesh(geometry, material2);
   const ball3Geometry = new THREE.SphereGeometry(0.05, 32, 32);
@@ -210,10 +277,10 @@ document.addEventListener("DOMContentLoaded", () => {
   ball3 = new THREE.Mesh(ball3Geometry, ball3Material);
   scene3d.add(ball);
   scene3d.add(ball2);
-  scene3d.add(ball3);
+  //scene3d.add(ball3);
   ball.position.set(10, -1, 29); // Initial position
   ball2.position.set(5, -3, 28); // Initial position for second ball
-  ball3.position.set(7.5, -2, 27); // Initial position for third ball
+  //ball3.position.set(7.5, -2, 27); // Initial position for third ball
 
   const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
   scene3d.add(ambientLight);
@@ -225,13 +292,193 @@ document.addEventListener("DOMContentLoaded", () => {
   const gridHelper = new THREE.GridHelper(10, 10);
   //scene3d.add(gridHelper);
 
-  // Optional: Add grid and light
-  const grid = new THREE.GridHelper(10, 10);
-  //scene3d.add(grid);
+  const gridXZ = new THREE.GridHelper(10, 10);
+  scene3d.add(gridXZ);
+
+  const gridYZ = new THREE.GridHelper(10, 10);
+  gridYZ.rotation.z = Math.PI / 2; // rotate 90° around Z to stand it up
+  scene3d.add(gridYZ);
+
+  const gridXY = new THREE.GridHelper(10, 10);
+  gridXY.rotation.x = Math.PI / 2;
+ // rotate 90° around X to make it flat in XY
+  scene3d.add(gridXY);
+  gridXY.visible = false;
 
   scene3d.add(trailLine);
   scene3d.add(trailLine2);
-  scene3d.add(trailLine3);
+  //scene3d.add(trailLine3);
+
+  const systemSelect = document.getElementById("system-select-3d");
+  const speedSlider = document.getElementById("simulation-speed");
+  const speedValue = document.getElementById("simulation-speed-value");
+  const param1Slider = document.getElementById("param1");
+  const param1Value = document.getElementById("param1-value");
+  const param2Slider = document.getElementById("param2");
+  const param2Value = document.getElementById("param2-value");
+  const param3Slider = document.getElementById("param3");
+  const param3Value = document.getElementById("param3-value");
+
+  const paramSymbol1 = document.getElementById("symb1");
+  const paramSymbol2 = document.getElementById("symb2");
+  const paramSymbol3 = document.getElementById("symb3");
+
+  const paramResetBtn = document.getElementById("resetParams-btn");
+
+  systemSelect.addEventListener("change", (e) => {
+    system.choice = e.target.value;
+    const equationTitle = document.getElementById("equation-title");
+    equationTitle.textContent = nameMap.get(system.choice);
+    const equation = document.getElementById("equation");
+    equation.innerHTML = equationMap.get(system.choice);
+    const [p1, p2, p3] = equationParamMap.get(e.target.value);
+    const latexStart = "\\(";
+    const latexEnd = "\\)";
+    paramSymbol1.textContent = latexStart + p1 + ":" + latexEnd;
+    paramSymbol2.textContent = latexStart + p2 + ":" + latexEnd;
+    paramSymbol3.textContent = latexStart + p3 + ":" + latexEnd;
+
+    const [p1Val, p2Val, p3Val] = system.initParams.get(system.choice);
+
+    param1Value.textContent = p1Val.toFixed(3);
+    param2Value.textContent = p2Val.toFixed(3);
+    param3Value.textContent = p3Val.toFixed(3);
+
+    const minMaxArray = system.paramsRange.get(system.choice);
+    console.log(system.paramsRange.get(system.choice));
+    
+    const p1Min = minMaxArray[0][0];
+    const p1Max = minMaxArray[0][1];
+
+  
+
+    const p2Min = minMaxArray[1][0];
+    const p2Max = minMaxArray[1][1];
+
+    const p3Min = minMaxArray[2][0];
+    const p3Max = minMaxArray[2][1];
+
+  
+
+    param1Slider.min = p1Min;
+    param1Slider.max = p1Max;
+
+    param2Slider.min = p2Min;
+    param2Slider.max = p2Max;
+
+    param3Slider.min = p3Min;
+    param3Slider.max = p3Max;
+
+    const p1Step = (p1Max - p1Min)/100;
+    const p2Step = (p2Max - p2Min)/100;
+    const p3Step = (p3Max - p3Min)/100;
+
+    param1Slider.step = p1Step;
+    param2Slider.step = p2Step;
+    param3Slider.step = p3Step;
+
+    param1Slider.value = p1Val;
+    param2Slider.value = p2Val;
+    param3Slider.value = p3Val;
+
+    MathJax.typeset(); // Re-render MathJax equations
+    reset();
+  });
+
+  speedSlider.addEventListener("input", (e) => {
+    const speed = parseInt(e.target.value);
+    speedValue.textContent = speed;
+    //input can be [1,5], 
+    stepsPerFrame = parseInt(speed*2);
+  });
+
+
+  param1Slider.addEventListener("input", (e) => {
+    const val = parseFloat(e.target.value);
+    let [p1, p2, p3] = system.params.get(system.choice);
+    system.params.set(system.choice, [val, p2, p3]);
+    param1Value.innerHTML = val;
+  });
+
+  param1Slider.addEventListener("change", (e) => {
+    reset();
+
+  });
+
+  param2Slider.addEventListener("input", (e) => {
+    const val = parseFloat(e.target.value);
+    let [p1, p2, p3] = system.params.get(system.choice);
+    system.params.set(system.choice, [p1, val, p3]);
+    param2Value.innerHTML = val;
+  });
+
+  param2Slider.addEventListener("change", (e) => {
+  reset();
+
+  });
+
+  param3Slider.addEventListener("input", (e) => {
+    const val = parseFloat(e.target.value);
+    let [p1, p2, p3] = system.params.get(system.choice);
+    system.params.set(system.choice, [p1, p2, val]);
+    param3Value.innerHTML = val;
+  });
+
+  param3Slider.addEventListener("change", (e) => {
+    reset();
+
+  });
+
+  paramResetBtn.addEventListener("click", (e) => {
+
+    const [p1Val, p2Val, p3Val] = system.initParams.get(system.choice);
+    system.params.set(system.choice, [p1Val, p2Val, p3Val]);
+    param1Value.textContent = p1Val.toFixed(3);
+    param2Value.textContent = p2Val.toFixed(3);
+    param3Value.textContent = p3Val.toFixed(3);
+    param1Slider.value = p1Val;
+    param2Slider.value = p2Val;
+    param3Slider.value = p3Val;
+    reset();
+
+  });
+
+
+  
+
+
+  const resetBtn = document.getElementById("reset-btn");
+  resetBtn.addEventListener("click", () => {
+    reset();
+  });
+  
+ 
+  
+    const btnXZ = document.getElementById("toggle-grid-btn1");
+    const btnYZ = document.getElementById("toggle-grid-btn2");
+    const btnXY = document.getElementById("toggle-grid-btn3");
+
+    btnXZ.addEventListener("click", () => {
+      showXZ = !showXZ;
+      gridXZ.visible = showXZ;
+      btnXZ.textContent = showXZ ? "Hide XY Grid" : "Show XY Grid";
+    });
+
+    btnYZ.addEventListener("click", () => {
+      showYZ = !showYZ;
+      gridYZ.visible = showYZ;
+      btnYZ.textContent = showYZ ? "Hide YZ Grid" : "Show YZ Grid";
+    });
+
+    btnXY.addEventListener("click", () => {
+      showXY = !showXY;
+      gridXY.visible = showXY;
+      btnXY.textContent = showXY ? "Hide XZ Grid" : "Show XZ Grid";
+    });
+
+
+
+
 
   animate();
 });

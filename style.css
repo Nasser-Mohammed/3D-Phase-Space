@@ -16,6 +16,14 @@ body {
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+input[type="range"] {
+  cursor: pointer;
 }
 
 h1 {
@@ -49,53 +57,143 @@ h2, h4 {
 
 /* Canvas styles */
 .canvas-container {
-  margin: 20px auto;
   display: flex;
   justify-content: center;
 }
 
-canvas {
-  border: 2px solid #ccc;
-  border-radius: 6px;
+
+
+
+#threeD-container{
+  background-color: black;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 15px;
 }
 
-.dimension-buttons button {
-  margin: 5px;
-  padding: 10px 15px;
+#system-select-3d{
+  font-family: 'Helvetica', 'Arial', sans-serif;
   font-size: 16px;
+  font-weight: bold;
+
+}
+
+#equation-display-div{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 50px;
+  border: black 5px solid;
+  border-radius: 10px;
+}
+
+#equation-title{
+  font-size: 27px;
+  
+}
+
+
+
+#controls{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  gap: 30px;
+  background-color: black;
+  color: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
+#palette-select{
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+label[for="simulation-speed"]{
+  margin-left: 30px;
+}
+
+#params{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  gap: 8px;
+}
+
+#param-title{
+  display: flex;
+  flex-direction: row;
+  justify-content: row;
+  align-items: row;
+  margin-bottom: 5px;
+}
+
+#resetParams-btn{
+  margin-top: 10px;
+  background-color: rgb(61, 58, 185);
+  color: white;
+  padding: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 15px; 
+  font-weight: bold;
+}
+
+#bottom-row{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  margin-top: 5px;
+}
+
+#reset-btn{
+  background-color: red;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 15px; 
+  margin-top: 20px;
   cursor: pointer;
 }
 
-#dimension-select {
-  margin: 10px 0;
-  padding: 10px 14px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: #f5f5f5;
-  color: #333;
-  outline: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-#dimension-select:hover {
-  border-color: #888;
-}
-
-#dimension-select:focus {
-  border-color: #007BFF;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-  background-color: #fff;
-}
-
-label[for="dimension-select"] {
-  font-weight: 600;
-  font-size: large;
-  display: block;
+.gridBtn{
+  background-color: rgb(88, 42, 173);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 15px; 
   margin-top: 20px;
-  margin-bottom: 6px;
-  color: #000000;
+  cursor: pointer;
+}
+
+
+
+.spacer {
+  height: 20px;
+  pointer-events: none;
 }
