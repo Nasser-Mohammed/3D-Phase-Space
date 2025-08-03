@@ -100,22 +100,29 @@ h2, h4 {
   
 }
 
-
-
-#controls{
+#mainControl{
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding-top: 15px;
-  padding-bottom: 15px;
+  gap: 100px;
+  width: 100%;
+  height: 210px;
+  margin-bottom: 20px;
+}
+
+#controls{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 30px;
   background-color: black;
   color: white;
   border-radius: 8px;
   padding: 15px;
-  margin-bottom: 15px;
-  margin-top: 15px;
+  flex: 1;
+  height: 100%;
 }
 
 #palette-select{
@@ -135,9 +142,11 @@ label[for="simulation-speed"]{
   justify-content: center;
   background-color: black;
   color: white;
-  padding: 20px;
+  padding: 15px;
   border-radius: 8px;
   gap: 8px;
+  flex: 1;
+  height: 100%;
 }
 
 #param-title{
@@ -160,6 +169,15 @@ label[for="simulation-speed"]{
   font-weight: bold;
 }
 
+#play-reset-row{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  margin-top: 5px;
+}
+
 #bottom-row{
   display: flex;
   flex-direction: row;
@@ -170,7 +188,7 @@ label[for="simulation-speed"]{
 }
 
 #reset-btn{
-  background-color: red;
+  background-color: rgb(153, 0, 0);
   color: white;
   padding: 10px 15px;
   border-radius: 8px;
@@ -179,6 +197,19 @@ label[for="simulation-speed"]{
   margin-top: 20px;
   cursor: pointer;
 }
+
+#pause-btn{
+  background-color: rgb(17, 21, 71);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 15px; 
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+
 
 .gridBtn{
   background-color: rgb(88, 42, 173);

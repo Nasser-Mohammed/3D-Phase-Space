@@ -2,7 +2,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/controls/OrbitControls.js';
 let renderer3d, scene3d, camera3d;
-let ball;
+let ball1;
 let ball2;
 let ball3;
 const dt = 0.001;
@@ -12,29 +12,41 @@ let stepsPerFrame = 10;
 const defaultSteps = stepsPerFrame;
 let animationId = null;
 let controls; 
-const maxTrailPoints = 5000;
+const maxTrailPoints = 7500;
 const trailPositions1 = [];
 const trailPositions2 = [];
 const numSteps = 1;
+
+let running = true;
 
 let showXZ = true;
 let showXY = false;
 let showYZ = true;
 
+const palettes = {
+  r: ["#ff2200", "#ffcb6b", "#9c3700"],       // reddish/orange/yellow
+  bg: ["#0057FF", "#009933", "#6A0DAD"],      // strong blue, strong green, strong purple
+  rgb: ["#8f0000", "#009723", "#0077FF"],     // red, brighter green, pure blue
+};
 
-const trailGeometry = new THREE.BufferGeometry();
-const trailMaterial = new THREE.LineBasicMaterial({ color: 0xffaa33});
-const trailLine = new THREE.Line(trailGeometry, trailMaterial);
+let initColors = palettes.r;
+
+
+const trailGeometry1 = new THREE.BufferGeometry();
+const trailMaterial1 = new THREE.LineBasicMaterial({ color: initColors[0]});
+const trailLine1 = new THREE.Line(trailGeometry1, trailMaterial1);
 
 const trailGeometry2 = new THREE.BufferGeometry();
-const trailMaterial2 = new THREE.LineBasicMaterial({ color: 0xCC4429});
+const trailMaterial2 = new THREE.LineBasicMaterial({ color: initColors[1]});
 const trailLine2 = new THREE.Line(trailGeometry2, trailMaterial2);
+
+
 
 let trailSkip = 0; //update every third point on trail
 
-// const trailGeometry3 = new THREE.BufferGeometry();
-// const trailMaterial3 = new THREE.LineBasicMaterial({ color: 0x0000ff }); // Blue
-// const trailLine3 = new THREE.Line(trailGeometry3, trailMaterial3);
+const trailGeometry3 = new THREE.BufferGeometry();
+const trailMaterial3 = new THREE.LineBasicMaterial({ color: initColors[2] }); // Blue
+const trailLine3 = new THREE.Line(trailGeometry3, trailMaterial3);
 
 const trailPositions3 = [];
 
@@ -211,42 +223,46 @@ function reset(){
   stepsPerFrame = defaultSteps;
   x1 = 1; y1 = 1; z1 = 1;
   x2 = 5; y2 = 3; z2 = 4;
-  clearTrail(trailPositions1, trailGeometry);
+  x3 = 2.5, y3 = 2, z3 = 3;
+
+  clearTrail(trailPositions1, trailGeometry1);
   clearTrail(trailPositions2, trailGeometry2);
+  clearTrail(trailPositions3, trailGeometry3);
   document.getElementById("simulation-speed").value = Math.floor(stepsPerFrame/2);
   document.getElementById("simulation-speed-value").textContent = Math.floor(stepsPerFrame/2);
-
+  running = true;
+  document.getElementById("pause-btn").textContent = "Pause";
 }
 
 function animate() {
   animationId = requestAnimationFrame(animate);
   if (frameCount++ % 1 !== 0) return;
 
-  simulationTime += dt;
+  if(running){
+    simulationTime += dt;
 
-  for(let i = 0; i < stepsPerFrame; i++) {
+    for(let i = 0; i < stepsPerFrame; i++) {
 
-    // Euler integration
-    [x1, y1, z1] = system.eulerStep(x1, y1, z1);
-    [x2, y2, z2] = system.eulerStep(x2, y2, z2);
-    [x3, y3, z3] = system.eulerStep(x3, y3, z3);
+      // Euler integration
+      [x1, y1, z1] = system.eulerStep(x1, y1, z1);
+      [x2, y2, z2] = system.eulerStep(x2, y2, z2);
+      [x3, y3, z3] = system.eulerStep(x3, y3, z3);
 
+      // Scale down for rendering
+      const scale = 0.05;
+      ball1.position.set(x1 * scale, y1 * scale, z1 * scale);
+      ball2.position.set(x2 * scale, y2 * scale, z2 * scale);
+      ball3.position.set(x3 * scale, y3 * scale, z3 * scale);
 
-    controls.update();
-
-    // Scale down for rendering
-    const scale = 0.05;
-    ball.position.set(x1 * scale, y1 * scale, z1 * scale);
-    ball2.position.set(x2 * scale, y2 * scale, z2 * scale);
-    //ball3.position.set(x3 * scale, y3 * scale, z3 * scale);
-
-    if (trailSkip++ % 4 === 0){
-      updateTrail(ball.position, trailPositions1, trailGeometry);
-      updateTrail(ball2.position, trailPositions2, trailGeometry2);
-    }
+      if (trailSkip++ % 3 === 0){
+        updateTrail(ball1.position, trailPositions1, trailGeometry1);
+        updateTrail(ball2.position, trailPositions2, trailGeometry2);
+        updateTrail(ball3.position, trailPositions3, trailGeometry3);
+      }
     //updateTrail(ball3.position, trailPositions3, trailGeometry3);
-
+    }
   }
+  controls.update();
 
   renderer3d.render(scene3d, camera3d);
 }
@@ -268,18 +284,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Create sphere
   const geometry = new THREE.SphereGeometry(0.05, 16, 16);
-  const material = new THREE.MeshBasicMaterial({ color: 0xff5533 });
-  const material2 = new THREE.MeshBasicMaterial({ color: 	0x003300 });
-  ball = new THREE.Mesh(geometry, material);
+  const material = new THREE.MeshBasicMaterial({ color: initColors[0] });
+  const material2 = new THREE.MeshBasicMaterial({ color: 	initColors[1] });
+  ball1 = new THREE.Mesh(geometry, material);
   ball2 = new THREE.Mesh(geometry, material2);
   const ball3Geometry = new THREE.SphereGeometry(0.05, 32, 32);
-  const ball3Material = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+  const ball3Material = new THREE.MeshBasicMaterial({ color: initColors[2] }); // Blue
   ball3 = new THREE.Mesh(ball3Geometry, ball3Material);
-  scene3d.add(ball);
+  scene3d.add(ball1);
   scene3d.add(ball2);
+  scene3d.add(ball3);
   //scene3d.add(ball3);
-  ball.position.set(10, -1, 29); // Initial position
-  ball2.position.set(5, -3, 28); // Initial position for second ball
+  ball1.position.set(x1, y1, z1); // Initial position
+  ball2.position.set(x2, y2, z2); // Initial position for second ball
+  ball3.position.set(x3, y3, z3);
+
   //ball3.position.set(7.5, -2, 27); // Initial position for third ball
 
   const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
@@ -289,25 +308,22 @@ document.addEventListener("DOMContentLoaded", () => {
   directionalLight.position.set(1, 1, 2);
   scene3d.add(directionalLight);
 
-  const gridHelper = new THREE.GridHelper(10, 10);
-  //scene3d.add(gridHelper);
-
-  const gridXZ = new THREE.GridHelper(10, 10);
+  const gridXZ = new THREE.GridHelper(15, 15);
   scene3d.add(gridXZ);
 
-  const gridYZ = new THREE.GridHelper(10, 10);
+  const gridYZ = new THREE.GridHelper(15, 15);
   gridYZ.rotation.z = Math.PI / 2; // rotate 90° around Z to stand it up
   scene3d.add(gridYZ);
 
-  const gridXY = new THREE.GridHelper(10, 10);
+  const gridXY = new THREE.GridHelper(15, 15);
   gridXY.rotation.x = Math.PI / 2;
  // rotate 90° around X to make it flat in XY
   scene3d.add(gridXY);
   gridXY.visible = false;
 
-  scene3d.add(trailLine);
+  scene3d.add(trailLine1);
   scene3d.add(trailLine2);
-  //scene3d.add(trailLine3);
+  scene3d.add(trailLine3);
 
   const systemSelect = document.getElementById("system-select-3d");
   const speedSlider = document.getElementById("simulation-speed");
@@ -345,7 +361,6 @@ document.addEventListener("DOMContentLoaded", () => {
     param3Value.textContent = p3Val.toFixed(3);
 
     const minMaxArray = system.paramsRange.get(system.choice);
-    console.log(system.paramsRange.get(system.choice));
     
     const p1Min = minMaxArray[0][0];
     const p1Max = minMaxArray[0][1];
@@ -476,8 +491,35 @@ document.addEventListener("DOMContentLoaded", () => {
       btnXY.textContent = showXY ? "Hide XZ Grid" : "Show XZ Grid";
     });
 
+    const paletteSelect = document.getElementById("palette-select");
+  
+    paletteSelect.addEventListener("change", (e) => {
+      const selected = e.target.value;
+      const colors = palettes[selected] || palettes.r;
 
+      ball1.material.color.set(colors[0]);
+      ball2.material.color.set(colors[1]);
+      ball3.material.color.set(colors[2]);
 
+      trailLine1.material.color.set(colors[0]);
+      trailLine2.material.color.set(colors[1]);
+      trailLine3.material.color.set(colors[2]);
+    });
+
+    const pauseBtn = document.getElementById("pause-btn");
+
+    pauseBtn.addEventListener("click", (e) => {
+      running = !running;
+
+      if(running){
+        animate();
+        pauseBtn.textContent = "Pause";
+      }
+      else{
+        pauseBtn.textContent = "Play";
+      }
+
+    });
 
 
   animate();
