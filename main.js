@@ -32,6 +32,13 @@ const palettes = {
   r: ["#ff2200", "#cf7916", "#af6238", "#ffef5f", "#ff0000", "#fda32d"],       // reddish/orange/yellow
   bg: ["#0057FF", "#009933", "#5638ff", "#00ad0e", "#008cff", "#73ff00"],      // strong blue, strong green, strong purple
   rgb: ["#8f0000", "#009723", "#0077FF", "#0094d8", "#9c0000", "#5eff1f"],     // red, brighter green, pure blue
+  alien: ["#7D3C98", "#E75480", "#1ABC9C", "#B39CD0", "#D81B60","#2978B5"],
+  cyberpunk: ["#FF00FF", "#00FFFF", "#FF6C00", "#FF0055", "#00FF99", "#3300FF"],
+  sunset: ["#FF6F61", "#F7B733", "#FF9472", "#FF3E41", "#FFC857", "#5D576B"],
+  electric: ["#B0E0E6", "#FFB6C1", "#FFD700", "#9370DB", "#40E0D0", "#FF69B4"],
+  contrast: ["#D72631", "#F46036", "#2E294E", "#1B998B", "#E2C044", "#F2F4F3"],
+  forest: ["#014D4D", "#028090", "#00A896", "#fbffab", "#E94F37", "#53354A"]
+
 };
 
 let initColors = palettes.r;
