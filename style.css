@@ -178,7 +178,7 @@ label[for="simulation-speed"]{
   margin-top: 5px;
 }
 
-#bottom-row{
+#display-row{
   display: flex;
   flex-direction: row;
   justify-content: center;
