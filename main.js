@@ -41,6 +41,7 @@ let maxFrames = 300; // e.g., 10 seconds at 30fps
 let capturing = true; // set to false after capturing
 const dpr = window.devicePixelRatio || 1;
 
+
 async function captureFrame(index) {
   return new Promise((resolve) => {
     canvas3d.toBlob((blob) => {
@@ -51,16 +52,14 @@ async function captureFrame(index) {
   });
 }
 
-
 async function captureFramesAndExport() {
-  console.log("Starting frame capture...");
-  for (frameIndex = 0; frameIndex < maxFrames; frameIndex++) {
-    renderer3d.render(scene3d, camera3d);
-    await captureFrame();
-    // optional: animate a single frame here (like RK step)
+  console.log("📸 Starting capture...");
+  for (let frameIndex = 0; frameIndex < maxFrames; frameIndex++) {
+    renderer3d.render(scene3d, camera3d);  // or your RK step
+    await captureFrame(frameIndex);
   }
 
-  console.log("Generating ZIP...");
+  console.log("📦 Generating ZIP...");
   const zipBlob = await zip.generateAsync({ type: "blob" });
 
   const url = URL.createObjectURL(zipBlob);
@@ -69,7 +68,7 @@ async function captureFramesAndExport() {
   a.download = "frames.zip";
   a.click();
 
-  console.log("Download complete.");
+  console.log("✅ Downloaded. Use ffmpeg to create a video.");
 }
 
 const palettes = {
