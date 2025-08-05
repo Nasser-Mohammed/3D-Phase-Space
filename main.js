@@ -612,6 +612,7 @@ function animate() {
   animationId = requestAnimationFrame(animate);
   if (frameCount++ % 1 !== 0) return;
 
+
   if(running){
     simulationTime += dt;
 
@@ -716,11 +717,29 @@ function toggleRecording(renderer) {
   }
 }
 
+function resizeCanvasToDisplaySize(canvas) {
+  const width  = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const needResize = canvas.width !== width || canvas.height !== height;
+
+  if (needResize) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+
+  return needResize;
+}
+
+
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas3d = document.getElementById("canvas3d");
-  const width = canvas3d.width;
+  canvas3d.width = 1650;
+  canvas3d.height = canvas3d.width*1/1.85;
+
   const height = canvas3d.height;
+  const width = canvas3d.width;
 
   scene3d = new THREE.Scene();
   camera3d = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
@@ -1060,7 +1079,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderer3d.render(scene3d, camera3d);
   const image = renderer3d.domElement.toDataURL('image/png');
   const link = document.createElement('a');
-  link.download = 'screenshot.png';
+  link.download = 'phaseSpace-sc.png';
   link.href = image;
   link.click();
 });
