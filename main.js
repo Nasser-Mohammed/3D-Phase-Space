@@ -2,6 +2,8 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js';
 //import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/controls/OrbitControls.js';
 import { TrackballControls } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/controls/TrackballControls.js';
+import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
+const zip = new JSZip();
 let renderer3d, scene3d, camera3d;
 let ball1;
 let ball2;
@@ -33,6 +35,42 @@ let showXY = false;
 let showYZ = true;
 
 let spheresVisible = true;
+
+let frameIndex = 0;
+let maxFrames = 300; // e.g., 10 seconds at 30fps
+let capturing = true; // set to false after capturing
+const dpr = window.devicePixelRatio || 1;
+
+async function captureFrame(index) {
+  return new Promise((resolve) => {
+    canvas3d.toBlob((blob) => {
+      zip.file(`frame_${String(index).padStart(5, '0')}.png`, blob);
+      console.log(`Captured frame ${index}`);
+      resolve();
+    }, 'image/png');
+  });
+}
+
+
+async function captureFramesAndExport() {
+  console.log("Starting frame capture...");
+  for (frameIndex = 0; frameIndex < maxFrames; frameIndex++) {
+    renderer3d.render(scene3d, camera3d);
+    await captureFrame();
+    // optional: animate a single frame here (like RK step)
+  }
+
+  console.log("Generating ZIP...");
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "frames.zip";
+  a.click();
+
+  console.log("Download complete.");
+}
 
 const palettes = {
   r: ["#ff2200", "#cf7916", "#af6238", "#ffef5f", "#ff0000", "#fda32d"],       // reddish/orange/yellow
@@ -661,6 +699,24 @@ function toggleParams(x,y, divName){
 
 }
 
+function resizeCanvasForHiDPI(canvas, renderer, camera) {
+  const dpr = window.devicePixelRatio || 1;
+
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+
+  // Set drawing buffer size to account for high DPI
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  renderer.setSize(width, height, false); // display size
+  renderer.setPixelRatio(dpr);            // rendering resolution
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas3d = document.getElementById("canvas3d");
@@ -1012,6 +1068,13 @@ document.addEventListener("DOMContentLoaded", () => {
   link.href = image;
   link.click();
 });
+
+document.getElementById("recordFramesBtn").addEventListener("click", () => {
+  captureFramesAndExport();
+});
+
+
+
 
 
 
