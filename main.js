@@ -1,6 +1,6 @@
 
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/controls/OrbitControls.js';
+//import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/controls/OrbitControls.js';
 import { TrackballControls } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/controls/TrackballControls.js';
 let renderer3d, scene3d, camera3d;
 let ball1;
@@ -39,8 +39,10 @@ const palettes = {
   electric: ["#B0E0E6", "#FFB6C1", "#FFD700", "#9370DB", "#40E0D0", "#FF69B4"],
   contrast: ["#D72631", "#F46036", "#2E294E", "#1B998B", "#E2C044", "#F2F4F3"],
   forest: ["#014D4D", "#028090", "#00A896", "#fbffab", "#E94F37", "#53354A"],
-  reyna: ["#a15fa3", "#8a50c0", "#80324c", "#ffa4a4", "#381c5e", "#491d3c"]
-
+  reyna: ["#a15fa3", "#8a50c0", "#80324c", "#ffa4a4", "#381c5e", "#491d3c"],
+  lavender: ["#5C2E7F", "#2C0B42", "#D3B1FC", "#473473", "#7A5A8C", "#B7A0E8"],
+  pinky: ["#52083C", "#9C437A", "#FCB1E9", "#E0C8DC", "#9E2973", "#F7D0EF"],
+  kodie: ["#070D4D", "#264491", "#636FC9", "#B4BCE0", "#250DBF", "#D0DAF7"]
 };
 
 let initColors = palettes.r;
@@ -446,8 +448,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   scene3d = new THREE.Scene();
   camera3d = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-  camera3d.position.z = 4;
-  camera3d.position.set(2, 1, 4);
+  camera3d.position.set(0.1, 0, 4);
+  camera3d.up.set(0, 1, 0);
+  camera3d.lookAt(0, 0, 0);
+
 
   renderer3d = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true });
   renderer3d.setSize(width, height);
@@ -462,13 +466,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // controls.dampingFactor = 0.05;
   // controls.screenSpacePanning = true;
   controls = new TrackballControls(camera3d, renderer3d.domElement);
-  controls.rotateSpeed = 2.2;
+  controls.rotateSpeed = 2;
   controls.zoomSpeed = 1;
   controls.panSpeed = 0.8;
   controls.dynamicDampingFactor = 0.3;
   controls.noPan = false;
-  controls.minDistance = 0;
-  controls.maxDistance = 20;
+  controls.minDistance = 0.5;
+  controls.maxDistance = 11;
+  controls.target.set(0, 0, 0);
+  controls.update();
 
 
 
@@ -753,6 +759,21 @@ document.addEventListener("DOMContentLoaded", () => {
     ball5.visible = spheresVisible;
     ball6.visible = spheresVisible;
     spheresVisibility.textContent = spheresVisible ? "Hide Spheres" : "Show Spheres";
+  });
+
+  const resetCamBtn = document.getElementById("resetCam");
+
+  resetCamBtn.addEventListener("click", (e) => {
+    camera3d.position.set(0.1, 0, 4);
+    camera3d.up.set(0, 1, 0);
+
+    // Ensure it's looking at the origin
+    camera3d.lookAt(0, 0, 0);
+
+    // Reset TrackballControls target and internal state
+    controls.target.set(0, 0, 0);
+    controls.reset();  // full reset of rotation/quaternion
+
   });
 
   [x1, y1, z1] = system.initialConditions.get(system.choice)[0];
