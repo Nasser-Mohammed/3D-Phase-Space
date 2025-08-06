@@ -5,10 +5,19 @@ This project is a 3D visualization of phase space trajectories for several nonli
 The simulation can generate very geometrically rich systems in real time. I have these all hosted on my math art page on my [website](https://nasser-mohammed.github.io/art/index.html).  
 [Aizawa Attractor video](https://nasser-mohammed.github.io/art/pictures/aizawa.mp4)  
 
-![Aizawa Attractor](https://nasser-mohammed.github.io/art/pictures/aizawaTwist.png)
+![Aizawa Attractor](https://nasser-mohammed.github.io/art/pictures/aizawaTwist.png)  
 
 [Chen Lee Attractor video](https://nasser-mohammed.github.io/art/pictures/chenLee.mp4)  
-![Chen Lee Image](https://nasser-mohammed.github.io/art/pictures/chenLeePrev.png)
+![Chen Lee Image](https://nasser-mohammed.github.io/art/pictures/chenLeePrev.png)  
+
+[Halvorsen System video](https://nasser-mohammed.github.io/art/pictures/halvorsen.mp4)    
+![Halvorsen Image](https://nasser-mohammed.github.io/art/pictures/halvorsenPre.png)  
+
+[Lorenz System video](https://nasser-mohammed.github.io/art/pictures/lorenzVid60fps.mp4)  
+![Lorenz System Image](https://nasser-mohammed.github.io/art/pictures/lorenzPrev.png)  
+
+[Three-Scroll Attractor video](https://nasser-mohammed.github.io/art/pictures/threeScroll.mp4)  
+![Three-Scroll Image](https://nasser-mohammed.github.io/art/pictures/threeScrollPrev.png)  
 
 
 ### Simulated Systems
