@@ -5,7 +5,7 @@ This project is a 3D visualization of phase space trajectories for several nonli
 The simulation can generate very geometrically rich systems in real time
 [Aizawa Attractor](https://nasser-mohammed.github.io/art/pictures/aizawa.mp4)  
 
-![Aizawa Attractor](https://nasser-mohammed.github.io/art/pictures/aizawaTwist.png)
+![Aizawa Attractor 2](https://nasser-mohammed.github.io/art/pictures/aizawaTwist.png)
 
 
 ### Simulated Systems
