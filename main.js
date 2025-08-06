@@ -37,7 +37,7 @@ let showYZ = true;
 let spheresVisible = true;
 
 let frameIndex = 0;
-let maxFrames = 300; // e.g., 10 seconds at 30fps
+let maxFrames = 2000; // e.g., 10 seconds at 30fps
 let capturing = true; // set to false after capturing
 const dpr = window.devicePixelRatio || 1;
 
@@ -182,7 +182,7 @@ equationMap.set("newton", "\\[\\begin{align*} \\frac{dx}{dt} &= -\\alpha x + y +
 equationMap.set("shimizu", "\\[\\begin{align*} \\frac{dx}{dt} &= y\\\\ \\\\ \\frac{dy}{dt} &= x(1-z)-\\alpha y\\\\ \\\\ \\frac{dz}{dt} &=  -\\beta z + x^2\\end{align*}\\]");
 equationMap.set("arneodo", "\\[\\begin{align*} \\frac{dx}{dt} &= y\\\\ \\\\ \\frac{dy}{dt} &= z\\\\ \\\\ \\frac{dz}{dt} &=  -\\alpha x - \\beta y - z + \\lambda x^3\\end{align*}\\]");
 equationMap.set("threeScroll", "\\[\\begin{align*} \\frac{dx}{dt} &= \\alpha(y-x)+ \\delta z\\\\ \\\\ \\frac{dy}{dt} &= \\beta x -xz + \\lambda y\\\\ \\\\ \\frac{dz}{dt} &=  xy-\\sigma z\\end{align*}\\]");
-equationMap.set("dequanLi", "\\[\\begin{align*} \\frac{dx}{dt} &= a(y-x)+cxz\\\\ \\\\ \\frac{dy}{dt} &= ex+fy-x*z\\\\ \\\\ \\frac{dz}{dt} &=  bz+xy-dx^2\\end{align*}\\]");
+equationMap.set("dequanLi", "\\[\\begin{align*} \\frac{dx}{dt} &= a(y-x)+cxz\\\\ \\\\ \\frac{dy}{dt} &= ex+fy-xz\\\\ \\\\ \\frac{dz}{dt} &=  bz+xy-dx^2\\end{align*}\\]");
 
 
 
@@ -330,7 +330,7 @@ class ThreeDimensionalSystems {
       ["burkShaw", [[1, 20], [0.25, 20], [0, 0]]],
       ["chenLee", [[1, 5], [-40, -9.5], [-3, -0.15]]],
       ["chua", [[5, 18], [23, 35], [0, 0]]],
-      ["newton", [[0, 18], [0.1, 0.5], [0, 0]]],
+      ["newton", [[0.1, 1], [0.1, 0.5], [0, 0]]],
       ["shimizu", [[0.18, 1.2], [0.1, 1.8], [0, 0]]],
       ["arneodo", [[1, 6], [2.25, 4], [0.5, 5]]],
       ["threeScroll", [[30, 60], [0, 70], [10, 26]]],
@@ -625,7 +625,6 @@ function clearTrail(trailArray, trailGeometry) {
 
 
 function reset(){
-  stepsPerFrame = defaultSteps;
   [x1, y1, z1] = system.initialConditions.get(system.choice)[0];
   [x2, y2, z2] = system.initialConditions.get(system.choice)[1];
   [x3, y3, z3] = system.initialConditions.get(system.choice)[2];
@@ -698,24 +697,6 @@ function toggleParams(x,y, divName){
 
 }
 
-function resizeCanvasForHiDPI(canvas, renderer, camera) {
-  const dpr = window.devicePixelRatio || 1;
-
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-
-  // Set drawing buffer size to account for high DPI
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-
-  renderer.setSize(width, height, false); // display size
-  renderer.setPixelRatio(dpr);            // rendering resolution
-
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-}
-
-
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas3d = document.getElementById("canvas3d");
@@ -735,7 +716,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderer3d = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true });
   renderer3d.setSize(width, height);
   renderer3d.setPixelRatio(window.devicePixelRatio);
-  document.body.appendChild(renderer3d.domElement);
   
 
   // controls = new OrbitControls(camera3d, renderer3d.domElement);
@@ -913,6 +893,7 @@ document.addEventListener("DOMContentLoaded", () => {
     //input can be [1,5], 
     stepsPerFrame = parseInt(speed*5);
     }
+    console.log(stepsPerFrame)
   });
 
 
