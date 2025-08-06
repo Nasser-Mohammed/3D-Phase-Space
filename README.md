@@ -11,7 +11,7 @@ The simulation can generate very geometrically rich systems in real time. I have
 ![Chen Lee Image](https://nasser-mohammed.github.io/art/pictures/chenLeePrev.png)  
 
 [Halvorsen System video](https://nasser-mohammed.github.io/art/pictures/halvorsen.mp4)    
-![Halvorsen Image](https://nasser-mohammed.github.io/art/pictures/halvorsenPre.png)  
+![Halvorsen Image](https://nasser-mohammed.github.io/art/pictures/halvorsenPrev.png)  
 
 [Lorenz System video](https://nasser-mohammed.github.io/art/pictures/lorenzVid60fps.mp4)  
 ![Lorenz System Image](https://nasser-mohammed.github.io/art/pictures/lorenzPrev.png)  
